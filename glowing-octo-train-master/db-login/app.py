@@ -33,6 +33,20 @@ def display_all_records(role="admin",Id=0):
 	finally:
 		connection.close()
 
+def display_all_workshops():
+	global workshops
+	connection=create_connection()
+	try:
+		with connection.cursor() as cursor:
+			#pull records and display using a left join
+			#select_sql = "SELECT * from users"
+			#if role not "admin"
+			select_sql= "SELECT * FROM workshop"
+			cursor.execute(select_sql)
+			data = cursor.fetchall()
+			workshops=list(data)
+	finally:
+		connection.close()
 
 
 class ServerError(Exception):pass
@@ -63,15 +77,6 @@ def home():
 		return render_template("index.html", session_user_name=username_session)
 	username_session=''
 	return render_template("index.html")
-#	connection=create_connection()
-#	try:
-#		with connection.cursor() as cursor:
-#			sql = "SELECT * from users"
-#			cursor.execute(sql)
-#			data = cursor.fetchall()
-#			data=list(data)
-#	finally:
-#			connection.close()
 	return render_template("Index.html", results=data)
 
 @app.route('/workshop')
@@ -96,50 +101,6 @@ def workshop():
 			return render_template('Index.html', results=data, session_user_name=username_session)
 	username_session=''
 	return render_template('index.html')
-
-#login
-#@app.route('/login', methods=['GET', 'POST'])
-#def login():
-#	connection=create_connection()
-#	if  session.get('logged_in'):
-#		display_all_records()
-#		username_session=escape(session['username']).capitalize()
-#		return redirect(url_for("index", results=data,session_user_name=username_session))
-#	error = None
-#	try:
-#		with connection.cursor() as cursor:
-#			if request.method == 'POST':
-#				username_form  = request.form['username']
-#				select_sql = "SELECT COUNT(1) FROM users WHERE UserName = %s"
-#				val =(username_form)
-#				cursor.execute(select_sql,val)
-#				#data = cursor.fetchall()
-
-#			if not list(cursor.fetchone())[0]:
-#				raise ServerError('Invalid username')
-
-#			password_form  = request.form['password']
-#			select_sql = "SELECT Password from users WHERE UserName = %s"
-#			val=(username_form)
-#			cursor.execute(select_sql,val)
-#			data = list(cursor.fetchall())
-#			#print (data)
-#			for row in data:
-#				print(md5(password_form.encode()).hexdigest())
-#				if md5(password_form.encode()).hexdigest()==row['Password']:
-#					session['username'] = request.form['username']
-#					print
-
-#					session['logged_in'] = True
-#					return redirect(url_for('home'))
-
-#			raise ServerError('Invalid password')
-#	except ServerError as e:
-#		error = str(e)
-#		session['logged_in']=False
-		
-#	return render_template('login.html', error=error)
-# update from form
 
 @app.route('/add_user', methods=['POST','GET'])
 def new_user():
@@ -318,9 +279,8 @@ def workshops():
 		return redirect(url_for('login'))
 	else:
 		username_session=escape(session['username']).capitalize()
-		display_all_records("admin")
-		print(data)
-	return render_template("workshop.html",results = data, session_user_name=username_session)
+		display_all_workshops()
+	return render_template("workshop.html",results = workshops, session_user_name=username_session)
 
 
 @app.route('/issue', methods = ['GET', "POST"])
